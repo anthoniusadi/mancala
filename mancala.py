@@ -20,6 +20,8 @@ store={
     player : 0,
     AI : 0
 }
+lanjut=0
+lanjut_ai=0
 #! fungsi untuk memperlihatkan isi dari board mancala
 def show(board_ai,board_player,store_ai,store_player):
     print("########= AI =##########")
@@ -29,34 +31,42 @@ def show(board_ai,board_player,store_ai,store_player):
     print("########= Player =######\n")
 #! fungsi untuk move player
 def move_player(lubang):
+    global lanjut
     rock=board['player'][lubang]
     sisa=rock
     print("jumlah rock yang diambil = ",rock,'di lubang ke ',lubang)
     board['player'][lubang]=0
-    label:s
     for i in range(rock):
         l=lubang+i+1
         sisa-=1
         if(l==7):
             store['player']+=1
+            lanjut=1
         elif(l>7):
             for x in range(sisa+1):
                 if(x>6 and x<14):
                     board['player'][abs(x-7)]+=1
+                    lanjut=0
                 elif(x==14):
-                    store['player']+=1 
+                    store['player']+=1
+                    lanjut=1 
                 elif(x>14):
                     print(x)
                     board['AI'][abs(x-21)]+=1
+                    lanjut=0
                 else:
                     board['AI'][(6-x)]+=1
+                    lanjut=0
             break
         else:
             board['player'][l]+=1
+            lanjut=0
+
 #    show(board['AI'],board['player'],store['AI'],store['player'])
 
 #! fungsi untuk move AI
 def move_ai(lubang):
+    global lanjut_ai
     rock=board['AI'][lubang]
     sisa=rock
     print("jumlah rock yang diambil = ",rock,'di lubang ke ',lubang)
@@ -68,18 +78,24 @@ def move_ai(lubang):
         sisa-=1
         if(l== -1):
             store['AI']+=1
+            lanjut_ai=1
         elif(l<-1):
             if (temp>=7 and temp<14):
                 board['AI'][13-temp]+=1
+                lanjut_ai=0
             elif (temp==14):
                 store['AI']+=1
+                lanjut_ai=1
             elif(temp>14):
                 board['player'][abs(15-temp)]+=1
+                lanjut_ai=0
             else:
                 board['player'][temp]+=1
+                lanjut_ai=0
             temp+=1
         else:
             board['AI'][l]+=1
+            lanjut_ai=0
 #    show(board['AI'],board['player'],store['AI'],store['player'])
 
 
@@ -104,36 +120,59 @@ turn=1
 first=randint(0,1)
 if(first==0):
     print("generate random first => [PLAYER MAIN DULUAN]\n")
-    while (turn<5):
+    while (turn<50):
         print("\nMulai Turn ",turn)
         turn_player= int(input('[PLAYER MAIN], lubang ke berapa yang mau diambil? '))
-
         if (turn_player>6):
             print('\n######## WARNING! ########\nmasukan ulang lubang yang akan diambil\n')
         else:
             move_player(turn_player)
             show(board['AI'],board['player'],store['AI'],store['player'])
+            #! cek main lagi atau tidak            
+            if(lanjut==1):
+                turn_player= int(input('[PLAYER MAIN LAGI], lubang ke berapa yang mau diambil? '))
+                move_player(turn_player)
+                show(board['AI'],board['player'],store['AI'],store['player'])
+                turn+=1
+#! giliran lawan satunya
             turn_ai= int(input('[AI MAIN], lubang ke berapa yang mau diambil? '))
-    #! giliran lawan satunya
             move_ai(turn_ai)
             show(board['AI'],board['player'],store['AI'],store['player'])
             turn+=1
+            #! cek main lagi atau tidak
+            if(lanjut_ai==1):
+                turn_ai= int(input('[AI MAIN LAGI], lubang ke berapa yang mau diambil? '))
+                move_ai(turn_ai)
+                show(board['AI'],board['player'],store['AI'],store['player'])                
+                turn+=1
 else:
     print("generate random first => [AI MAIN DULUAN]\n")
-    while (turn<5):
+    while (turn<50):
         print("\nMulai Turn ",turn)
         turn_ai= int(input('[AI MAIN], lubang ke berapa yang mau diambil? '))
-
         if (turn_ai>6):
             print('\n######## WARNING! ########\nmasukan ulang lubang yang akan diambil\n')
         else:
             move_ai(turn_ai)
             show(board['AI'],board['player'],store['AI'],store['player'])
+            #! cek main lagi atau tidak
+            if(lanjut_ai==1):
+                turn_ai= int(input('[AI MAIN LAGI], lubang ke berapa yang mau diambil? '))
+                move_ai(turn_ai)
+                show(board['AI'],board['player'],store['AI'],store['player'])                
+                turn+=1
+#! giliran lawan satunya
             turn_player= int(input('[player MAIN], lubang ke berapa yang mau diambil? '))
-    #! giliran lawan satunya
             move_player(turn_player)
             show(board['AI'],board['player'],store['AI'],store['player'])
             turn+=1
+            #! cek main lagi atau tidak
+            if(lanjut==1):
+                turn_player= int(input('[PLAYER MAIN LAGI], lubang ke berapa yang mau diambil? '))
+                move_player(turn_player)
+                show(board['AI'],board['player'],store['AI'],store['player'])
+                turn+=1
+            
 ##! hitung skor setelah turn selesai  
 print("Turn sudah selesai hasil perhitungan skor menentukan")
 hitung_skor(store['player'],store['AI'])
