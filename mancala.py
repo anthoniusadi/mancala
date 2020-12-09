@@ -57,7 +57,31 @@ def move_player(lubang):
 
 #! fungsi untuk move AI
 def move_ai(lubang):
-    pass
+    rock=board['AI'][lubang]
+    sisa=rock
+    print("jumlah rock yang diambil = ",rock,'di lubang ke ',lubang)
+    board['AI'][lubang]=0
+    l=lubang
+    temp=0
+    for i in range(rock,0,-1):
+        l-=1
+        sisa-=1
+        if(l== -1):
+            store['AI']+=1
+        elif(l<-1):
+            if (temp>=7 and temp<14):
+                board['AI'][13-temp]+=1
+            elif (temp==14):
+                store['AI']+=1
+            elif(temp>14):
+                board['player'][abs(15-temp)]+=1
+            else:
+                board['player'][temp]+=1
+            temp+=1
+        else:
+            board['AI'][l]+=1
+#    show(board['AI'],board['player'],store['AI'],store['player'])
+
 
 #! fungsi untuk menghitung skor ketika step sudah habis atau permainan berakhir
 def hitug_skor(lumbung_player,lumbung_ai):
@@ -75,19 +99,19 @@ show(board['AI'],board['player'],store['AI'],store['player'])
 # board['AI'][6]=2
 turn=1
 ##!random player turn 
-
 while (turn<50):
     print("\nMulai Turn ",turn)
-    turn_player= int(input('lubang ke berapa yang mau diambil? '))
+    turn_player= int(input('[PLAYER MAIN], lubang ke berapa yang mau diambil? '))
 
     if (turn_player>6):
         print('\n######## WARNING! ########\nmasukan ulang lubang yang akan diambil\n')
     else:
         move_player(turn_player)
         show(board['AI'],board['player'],store['AI'],store['player'])
-        move_ai(turn_player)
+        turn_ai= int(input('[AI MAIN], lubang ke berapa yang mau diambil? '))
+#! giliran lawan satunya
+        move_ai(turn_ai)
+        show(board['AI'],board['player'],store['AI'],store['player'])
         turn+=1
-    
-
-##! hitung skor
+##! hitung skor setelah turn selesai  
 # hitug_skor(board['AI'],board['player'])
