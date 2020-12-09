@@ -1,5 +1,5 @@
 ################### Mancala ####################
-
+from random import randint
 #? 
 #!                             (AI)
 #?              [0]  [1]  [2]   [3]   [4]   [5]   [6]
@@ -84,9 +84,11 @@ def move_ai(lubang):
 
 
 #! fungsi untuk menghitung skor ketika step sudah habis atau permainan berakhir
-def hitug_skor(lumbung_player,lumbung_ai):
-    pass
-
+def hitung_skor(lumbung_player,lumbung_ai):
+    if(lumbung_player>lumbung_ai):
+        return print("pemenang adalah player")
+    else:
+        return print("pemenang adalah AI")
 #print("\nMulai Turn 1")
 show(board['AI'],board['player'],store['AI'],store['player'])
 #! contoh cara memasukan nilainya untuk setiap lubang
@@ -98,20 +100,40 @@ show(board['AI'],board['player'],store['AI'],store['player'])
 # board['AI'][3]=1
 # board['AI'][6]=2
 turn=1
-##!random player turn 
-while (turn<50):
-    print("\nMulai Turn ",turn)
-    turn_player= int(input('[PLAYER MAIN], lubang ke berapa yang mau diambil? '))
+#! menentukan siapa yang main duluan
+first=randint(0,1)
+if(first==0):
+    print("generate random first => [PLAYER MAIN DULUAN]\n")
+    while (turn<5):
+        print("\nMulai Turn ",turn)
+        turn_player= int(input('[PLAYER MAIN], lubang ke berapa yang mau diambil? '))
 
-    if (turn_player>6):
-        print('\n######## WARNING! ########\nmasukan ulang lubang yang akan diambil\n')
-    else:
-        move_player(turn_player)
-        show(board['AI'],board['player'],store['AI'],store['player'])
+        if (turn_player>6):
+            print('\n######## WARNING! ########\nmasukan ulang lubang yang akan diambil\n')
+        else:
+            move_player(turn_player)
+            show(board['AI'],board['player'],store['AI'],store['player'])
+            turn_ai= int(input('[AI MAIN], lubang ke berapa yang mau diambil? '))
+    #! giliran lawan satunya
+            move_ai(turn_ai)
+            show(board['AI'],board['player'],store['AI'],store['player'])
+            turn+=1
+else:
+    print("generate random first => [AI MAIN DULUAN]\n")
+    while (turn<5):
+        print("\nMulai Turn ",turn)
         turn_ai= int(input('[AI MAIN], lubang ke berapa yang mau diambil? '))
-#! giliran lawan satunya
-        move_ai(turn_ai)
-        show(board['AI'],board['player'],store['AI'],store['player'])
-        turn+=1
+
+        if (turn_ai>6):
+            print('\n######## WARNING! ########\nmasukan ulang lubang yang akan diambil\n')
+        else:
+            move_ai(turn_ai)
+            show(board['AI'],board['player'],store['AI'],store['player'])
+            turn_player= int(input('[player MAIN], lubang ke berapa yang mau diambil? '))
+    #! giliran lawan satunya
+            move_player(turn_player)
+            show(board['AI'],board['player'],store['AI'],store['player'])
+            turn+=1
 ##! hitung skor setelah turn selesai  
-# hitug_skor(board['AI'],board['player'])
+print("Turn sudah selesai hasil perhitungan skor menentukan")
+hitung_skor(store['player'],store['AI'])
