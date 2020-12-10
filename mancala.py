@@ -1,4 +1,4 @@
-################### Mancala ####################
+################### Mancala Game ####################
 from random import randint
 #? 
 #!                             (AI)
