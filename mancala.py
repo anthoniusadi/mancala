@@ -296,7 +296,7 @@ class MancalaGA:
         lakukan mutasi hanya untuk 2 gen dalam 1 individu jika propbabiliti individu lebih kecil dari pm
         '''
         pidv = np.random.uniform(0,1)
-        print(pidv)
+        #print(pidv)
         if pidv < self.pm:
             
             # lakukan pemilihan random gen
@@ -715,7 +715,7 @@ if(first==0):
                 turn_player= int(input('[PLAYER MAIN LAGI], lubang ke berapa yang mau diambil? '))
                 move_p(turn_player)
                 show(board['AI'],board['player'],store['AI'],store['player'])
-                turn+=1
+                #turn+=1
 #! giliran lawan satunya
             ga.self_scan()
             for iterasi in range(0,20):
@@ -775,7 +775,7 @@ if(first==0):
     #            turn_ai= int(input('[AI MAIN], lubang ke berapa yang mau diambil? '))
                 move_ai(best_choice)
                 show(board['AI'],board['player'],store['AI'],store['player'])                
-                turn+=1
+                #turn+=1
 #! jika yang main AI duluan
 else:
     print("generate random first => [AI MAIN DULUAN]\n")
@@ -844,7 +844,7 @@ else:
 #            turn_ai= int(input('[AI MAIN], lubang ke berapa yang mau diambil? '))
             move_ai(best_choice)
             show(board['AI'],board['player'],store['AI'],store['player'])                
-            turn+=1
+            #turn+=1
 #! giliran lawan satunya
         turn_player= int(input('[player MAIN], lubang ke berapa yang mau diambil? '))
         move_p(turn_player)
@@ -855,7 +855,7 @@ else:
             turn_player= int(input('[PLAYER MAIN LAGI], lubang ke berapa yang mau diambil? '))
             move_p(turn_player)
             show(board['AI'],board['player'],store['AI'],store['player'])
-            turn+=1
+            #turn+=1
             
 ##! hitung skor setelah turn selesai  
 print("Turn sudah selesai hasil perhitungan skor menentukan")
