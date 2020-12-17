@@ -16,7 +16,7 @@ class MancalaGA:
         
     
     def individu(self):
-        return np.array([np.random.uniform(0,100) for i in range(self.num_of_gen)])
+        return np.array([np.random.uniform(0,1) for i in range(self.num_of_gen)])
     
     def population(self):
         return np.array([self.individu() for i in range(self.pop_size)])
@@ -50,7 +50,9 @@ class MancalaGA:
             
     def calc_fitnes(self, individu, heuristic):
         wh = heuristic*individu
-        return np.sum(wh[:self.num_of_gen-1]) - wh[-1]
+
+#        return np.sum(list(wh[0],wh[1],wh[2],wh[3],wh[4]))-wh[5]
+        return np.sum(wh[:5]) - wh[-1]
     
     def self_scan(self):
         data = {}
@@ -59,9 +61,9 @@ class MancalaGA:
             h2 = self.h2(idx, lubang)
             h3 = self.h3(idx, lubang)
             h4 = self.h4(idx, lubang)
-            h5 = self.h5(idx, lubang)
-            
-            data[idx] = np.array([h1,h2,h3,h4,h5])
+            h5 = self.h5(idx, lubang) 
+            h6 = self.h6(idx, lubang)
+            data[idx] = np.array([h1,h2,h3,h4,h5,h6])
         return data
     
         
@@ -72,7 +74,7 @@ class MancalaGA:
         Karena pada akhir permainan, rock pada lubang akan dipindahkan semuanya pada lumbung. Lubang kanan semakin aman.
         '''
         # [0,1,2,3,4,5,6] [lumbung]
-        if len(self.self_state)-(idx_lubang+isi_lubang) == 0:
+        if len(self.self_state)-1 <= (idx_lubang+isi_lubang):
             return 1.0
         return 0.0
     
@@ -112,7 +114,7 @@ class MancalaGA:
         total_batu_after = np.sum(new_state)
         
         return total_batu_after/total_batu_before
-    
+            
     def h3(self, idx_lubang, isi_lubang):
         '''
         Mempertahankan gerakan memindah rock sebanyak mungkin
@@ -166,8 +168,15 @@ class MancalaGA:
         else:
             return 0.0
         
-    
-    def h5(self, idx_lubang, isi_lubang):
+    def h5(self,idx_lubang,isi_lubang):
+        target = idx_lubang + isi_lubang
+        if len(self.self_state ) < (idx_lubang+isi_lubang):
+            
+            return 1.0
+        else:
+            return 0.0
+        
+    def h6(self, idx_lubang, isi_lubang):
         '''
         h5 pada excel dihapus diganti dengan h6 diexcel
         yaitu strategi bertahan
@@ -296,7 +305,7 @@ class MancalaGA:
             
             for i in gen_bermutasi:
                 
-                individu[i] = np.random.uniform(0,100)
+                individu[i] = np.random.uniform(0,1)
             ##################### hitung FV langsung
             heur=ga.self_scan()
             temporary=[]
@@ -305,7 +314,7 @@ class MancalaGA:
                 temporary.append(hasil)
             res=0
             for j in range(len(temporary)):
-                res+= temporary[j][0]+temporary[j][1]+temporary[j][2]+temporary[j][3]-temporary[j][4]
+                res+= temporary[j][0]+temporary[j][1]+temporary[j][2]+temporary[j][3]+temporary[j][4]-temporary[j][5]
             result=res
             return individu,result
         
@@ -317,7 +326,7 @@ class MancalaGA:
                 temporary.append(hasil)
             res=0
             for j in range(len(temporary)):
-                res+= temporary[j][0]+temporary[j][1]+temporary[j][2]+temporary[j][3]-temporary[j][4]
+                res+= temporary[j][0]+temporary[j][1]+temporary[j][2]+temporary[j][3]+temporary[j][4]-temporary[j][5]
             result=res
             return individu,result
         
@@ -520,7 +529,7 @@ setting param
 '''
 # SELF_STATE = [1,2,2,4,8,5,12]
 # OPPONENT_STATE = [6,7,8,9,2,4,12]
-NUMBER_OF_GEN = 5
+NUMBER_OF_GEN = 6
 NUMBER_OF_POPULATION = 10
 NUMBER_OF_GENERATION = 10
 PC = 0.8
@@ -702,7 +711,7 @@ if(first==0):
             move_p(turn_player)
             show(board['AI'],board['player'],store['AI'],store['player'])
             #! cek main lagi atau tidak            
-            if(lanjut_ai==1):
+            while(lanjut_ai==1):
                 turn_player= int(input('[PLAYER MAIN LAGI], lubang ke berapa yang mau diambil? '))
                 move_p(turn_player)
                 show(board['AI'],board['player'],store['AI'],store['player'])
@@ -738,7 +747,7 @@ if(first==0):
             show(board['AI'],board['player'],store['AI'],store['player'])
             turn+=1
             #! cek main lagi atau tidak
-            if(lanjut==1):
+            while(lanjut==1):
                 ga.self_scan()
                 for iterasi in range(0,20):
                     #print("###################### GENERASI KE ",iterasi," #######################")
@@ -804,7 +813,7 @@ else:
         turn+=1
         print("lanjut = ",lanjut)
         #! cek main lagi atau tidak
-        if(lanjut==1):
+        while(lanjut==1):
             print("[AI] MAIN LAGI")
             ga.self_scan()
             for iterasi in range(0,20):
@@ -842,7 +851,7 @@ else:
         show(board['AI'],board['player'],store['AI'],store['player'])
         turn+=1
         #! cek main lagi atau tidak
-        if(lanjut_ai==1):
+        while(lanjut_ai==1):
             turn_player= int(input('[PLAYER MAIN LAGI], lubang ke berapa yang mau diambil? '))
             move_p(turn_player)
             show(board['AI'],board['player'],store['AI'],store['player'])
