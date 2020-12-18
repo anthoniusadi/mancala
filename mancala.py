@@ -14,7 +14,6 @@ class MancalaGA:
         self.self_state = board['player'] # list state ai (lubang) *default [7,7,7,7,7,7,7]
         self.opponent_state = board['AI'] # list state player (lubang) *default [7,7,7,7,7,7,7]
         
-    
     def individu(self):
         return np.array([np.random.uniform(0,1) for i in range(self.num_of_gen)])
     
@@ -24,7 +23,6 @@ class MancalaGA:
     def debug_lubang_representation(self):
         global h1,h2,h3,h4,h5
         populasi = self.population()
-        
         
         for idx, lubang in enumerate(self.self_state):
             idx_lubang = idx
@@ -420,6 +418,7 @@ def move_ai(lubang):
                 elif(x==14):
                     store['player']+=1
                     lanjut=1 
+                    last=0
                     
                 elif(x>14):
                     
@@ -467,12 +466,14 @@ def move_p(lubang):
             last=0
         elif(l<-1):
             if (temp>=7 and temp<14):
+                #! lap 0 batu di lawan
                 board['AI'][13-temp]+=1
                 lanjut_ai=0
                 last,idx_last=board['AI'][13-temp],(13-temp)
             elif (temp==14):
                 store['AI']+=1
                 lanjut_ai=1
+                last=0
             elif(temp>14):
                 board['player'][abs(15-temp)]+=1
                 lanjut_ai=0
@@ -497,8 +498,12 @@ def move_p(lubang):
 #! fungsi untuk menghitung skor ketika step sudah habis atau permainan berakhir
 def hitung_skor(lumbung_player,lumbung_ai):
     if(lumbung_player>lumbung_ai):
+        print("skor lumbung = ",lumbung_player)
         return print("pemenang adalah player")
+    if(lumbung_ai==lumbung_player):
+        return print(" SKOR SERI ")
     else:
+        print("skor lumbung = ",lumbung_ai)
         return print("pemenang adalah AI")
 ##! jalankan algoritma mencuri cekk dahulu apakah berhenti di 0 
 def curi():
@@ -698,11 +703,31 @@ pop = ga.population()
 # ##! hitung skor setelah turn selesai  
 # print("Turn sudah selesai hasil perhitungan skor menentukan")
 # hitung_skor(store['player'],store['AI'])
+def check(board_ai,board_player):
+    cek_player=0
+    cek_ai=0
+    for i in board['AI']:
+        cek_ai+=i
+    for f in board['player']:
+        cek_player+=f
+    # print("total player ", cek_ai)
+    # print("total AI ", cek_player)
+    return cek_ai,cek_player
+    
 ########################## !switch player and AI
 print("first = ",first,'\n')
 if(first==0):
+    #! cek Game selesai atau tidak
+    #! masukan fungsi cek setiap daerah
     print("generate random first => [PLAYER MAIN DULUAN]\n")
-    while (turn<20):
+    while (turn<=20):
+        skor_ai,skor_p=check(board['AI'],board['player'])
+        if((skor_ai==0) or (skor_p==0)):
+            ##! hitung keseluruhan skor
+            store['AI']+= skor_ai
+            store['player']+= skor_p
+            break            
+            
         print("\nMulai Turn ",turn)
         turn_player= int(input('[PLAYER MAIN], lubang ke berapa yang mau diambil? '))
         if (turn_player>6):
@@ -771,7 +796,7 @@ if(first==0):
                 for c in range(len(skalar)):
                     h=np.sum(skalar[c][0:4])-skalar[c][-1]
                     hsl.append(h)
-                best_choice = ga.move_lubang(hsl)            
+                best_choice = ga.move_lubang(hsl)
     #            turn_ai= int(input('[AI MAIN], lubang ke berapa yang mau diambil? '))
                 move_ai(best_choice)
                 show(board['AI'],board['player'],store['AI'],store['player'])                
@@ -779,9 +804,14 @@ if(first==0):
 #! jika yang main AI duluan
 else:
     print("generate random first => [AI MAIN DULUAN]\n")
-    while (turn<20):
+    while (turn<=20):
         print("\nMulai Turn ",turn)
-        
+        skor_ai,skor_p=check(board['AI'],board['player'])
+        if((skor_ai==0) or (skor_p==0)):
+            ##! hitung keseluruhan skor
+            store['AI']+= skor_ai
+            store['player']+= skor_p
+            break  
         ga.self_scan()
         for iterasi in range(0,20):
             #print("###################### GENERASI KE ",iterasi," #######################")
@@ -856,7 +886,7 @@ else:
             move_p(turn_player)
             show(board['AI'],board['player'],store['AI'],store['player'])
             #turn+=1
-            
+
 ##! hitung skor setelah turn selesai  
 print("Turn sudah selesai hasil perhitungan skor menentukan")
 hitung_skor(store['AI'],store['player'])

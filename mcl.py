@@ -16,7 +16,7 @@ class MancalaGA:
         
     
     def individu(self):
-        return np.array([np.random.uniform(0,100) for i in range(self.num_of_gen)])
+        return np.array([np.random.uniform(0,1) for i in range(self.num_of_gen)])
     
     def population(self):
         return np.array([self.individu() for i in range(self.pop_size)])
@@ -50,7 +50,9 @@ class MancalaGA:
             
     def calc_fitnes(self, individu, heuristic):
         wh = heuristic*individu
-        return np.sum(wh[:self.num_of_gen-1]) - wh[-1]
+
+#        return np.sum(list(wh[0],wh[1],wh[2],wh[3],wh[4]))-wh[5]
+        return np.sum(wh[:5]) - wh[-1]
     
     def self_scan(self):
         data = {}
@@ -59,9 +61,9 @@ class MancalaGA:
             h2 = self.h2(idx, lubang)
             h3 = self.h3(idx, lubang)
             h4 = self.h4(idx, lubang)
-            h5 = self.h5(idx, lubang)
-            
-            data[idx] = np.array([h1,h2,h3,h4,h5])
+            h5 = self.h5(idx, lubang) 
+            h6 = self.h6(idx, lubang)
+            data[idx] = np.array([h1,h2,h3,h4,h5,h6])
         return data
     
         
@@ -72,7 +74,7 @@ class MancalaGA:
         Karena pada akhir permainan, rock pada lubang akan dipindahkan semuanya pada lumbung. Lubang kanan semakin aman.
         '''
         # [0,1,2,3,4,5,6] [lumbung]
-        if len(self.self_state)-(idx_lubang+isi_lubang) == 0:
+        if len(self.self_state)-1 <= (idx_lubang+isi_lubang):
             return 1.0
         return 0.0
     
@@ -112,7 +114,7 @@ class MancalaGA:
         total_batu_after = np.sum(new_state)
         
         return total_batu_after/total_batu_before
-    
+            
     def h3(self, idx_lubang, isi_lubang):
         '''
         Mempertahankan gerakan memindah rock sebanyak mungkin
@@ -166,8 +168,15 @@ class MancalaGA:
         else:
             return 0.0
         
-    
-    def h5(self, idx_lubang, isi_lubang):
+    def h5(self,idx_lubang,isi_lubang):
+        target = idx_lubang + isi_lubang
+        if len(self.self_state ) < (idx_lubang+isi_lubang):
+            
+            return 1.0
+        else:
+            return 0.0
+        
+    def h6(self, idx_lubang, isi_lubang):
         '''
         h5 pada excel dihapus diganti dengan h6 diexcel
         yaitu strategi bertahan
@@ -180,7 +189,7 @@ class MancalaGA:
         jml_batu_ke_musuh = abs(len(self.self_state) - (idx_lubang+isi_lubang))
         if jml_batu_ke_musuh > 0: # berarti ada batu yang masuk ke lubang musuh
             jml_batu_ke_musuh = len(self.self_state) if jml_batu_ke_musuh > len(self.self_state) else jml_batu_ke_musuh
-            return jml_batu_ke_musuh/(len(self.self_state)*0.5)
+            return jml_batu_ke_musuh/len(self.self_state)
         else:
             return 0.0
     
@@ -287,7 +296,7 @@ class MancalaGA:
         lakukan mutasi hanya untuk 2 gen dalam 1 individu jika propbabiliti individu lebih kecil dari pm
         '''
         pidv = np.random.uniform(0,1)
-        print(pidv)
+        #print(pidv)
         if pidv < self.pm:
             
             # lakukan pemilihan random gen
@@ -296,7 +305,7 @@ class MancalaGA:
             
             for i in gen_bermutasi:
                 
-                individu[i] = np.random.uniform(0,100)
+                individu[i] = np.random.uniform(0,1)
             ##################### hitung FV langsung
             heur=ga.self_scan()
             temporary=[]
@@ -305,7 +314,7 @@ class MancalaGA:
                 temporary.append(hasil)
             res=0
             for j in range(len(temporary)):
-                res+= temporary[j][0]+temporary[j][1]+temporary[j][2]+temporary[j][3]-temporary[j][4]
+                res+= temporary[j][0]+temporary[j][1]+temporary[j][2]+temporary[j][3]+temporary[j][4]-temporary[j][5]
             result=res
             return individu,result
         
@@ -317,7 +326,7 @@ class MancalaGA:
                 temporary.append(hasil)
             res=0
             for j in range(len(temporary)):
-                res+= temporary[j][0]+temporary[j][1]+temporary[j][2]+temporary[j][3]-temporary[j][4]
+                res+= temporary[j][0]+temporary[j][1]+temporary[j][2]+temporary[j][3]+temporary[j][4]-temporary[j][5]
             result=res
             return individu,result
         
@@ -358,11 +367,11 @@ class MancalaGA:
 ################### Mancala Game ####################
 from random import randint
 #? 
-#!                             (AI)
+#!                             (PLAYER)
 #?              [0]  [1]  [2]   [3]   [4]   [5]   [6]
 #*  [store_AI]                                            [store_player]
 #?              [0]   [1]   [2]   [3]  [4]   [5]    [6]
-#!                            (Player)
+#!                            (AI)
 #? 
 #?
 player = 'player'
@@ -386,7 +395,7 @@ def show(board_ai,board_player,store_ai,store_player):
     print(store_ai,'===================',store_player)
     print('==',board_player,'==')
     print("########= AI =######\n")
-#! fungsi untuk move player
+#! fungsi untuk move AI
 def move_ai(lubang):
     global lanjut
     global last,idx_last
@@ -401,6 +410,7 @@ def move_ai(lubang):
         if(l==7):
             store['player']+=1
             lanjut=1
+            last=0
         elif(l>7):
             for x in range(sisa+1):
                 if(x>6 and x<14):
@@ -423,7 +433,7 @@ def move_ai(lubang):
                     # last,idx_last=board['AI'][(6-x)],(6-x)
                     last=0
             
-            if(last==1):
+            if(last==1 and (board['AI'][idx_last]>0)):
                 store['player']+=((board['AI'][idx_last])+1)
                 board['player'][idx_last]=0
                 board['AI'][idx_last]=0
@@ -432,14 +442,14 @@ def move_ai(lubang):
             board['player'][l]+=1
             lanjut=0
             last,idx_last=board['player'][l],l
-    if(last==1):
+    if(last==1 and (board['AI'][idx_last]>0)):
         store['player']+=((board['AI'][idx_last])+1)
         board['player'][idx_last]=0
         board['AI'][idx_last]=0
 #    show(board['AI'],board['player'],store['AI'],store['player'])
-#! fungsi untuk move AI
-def move_player(lubang):
-    global lanjut
+#! fungsi untuk move player
+def move_p(lubang):
+    global lanjut_ai
     global last,idx_last
     last=0
     rock=board['AI'][lubang]
@@ -453,31 +463,33 @@ def move_player(lubang):
         sisa-=1
         if(l== -1):
             store['AI']+=1
-            lanjut=1
+            lanjut_ai=1
+            last=0
         elif(l<-1):
             if (temp>=7 and temp<14):
                 board['AI'][13-temp]+=1
-                lanjut=0
+                lanjut_ai=0
                 last,idx_last=board['AI'][13-temp],(13-temp)
             elif (temp==14):
                 store['AI']+=1
-                lanjut=1
+                lanjut_ai=1
+                last=0
             elif(temp>14):
                 board['player'][abs(15-temp)]+=1
-                lanjut=0
+                lanjut_ai=0
                 last=0
                 # last,idx_last=board['player'][abs(15-temp)],abs(15-temp)
             else:
                 board['player'][temp]+=1
-                lanjut=0
+                lanjut_ai=0
                 last=0
                 # last,idx_last=board['player'][temp],temp
             temp+=1
         else:
             board['AI'][l]+=1
-            lanjut=0
+            lanjut_ai=0
             last,idx_last=board['AI'][l],l
-    if(last==1):
+    if(last==1 and (board['player'][idx_last]>0)):
         store['AI']+=((board['player'][idx_last])+1)
         board['AI'][idx_last]=0
         board['player'][idx_last]=0
@@ -511,14 +523,14 @@ show(board['AI'],board['player'],store['AI'],store['player'])
 # board['AI'][6]=2
 turn=1
 #! menentukan siapa yang main duluan
-first=randint(0,1)
-
+# first=randint(0,1)
+first = 0
 '''
 setting param
 '''
 # SELF_STATE = [1,2,2,4,8,5,12]
 # OPPONENT_STATE = [6,7,8,9,2,4,12]
-NUMBER_OF_GEN = 5
+NUMBER_OF_GEN = 6
 NUMBER_OF_POPULATION = 10
 NUMBER_OF_GENERATION = 10
 PC = 0.8
@@ -530,25 +542,187 @@ pop = ga.population()
 
 
 
+# if(first==0):
+#     print("generate random first => [PLAYER MAIN DULUAN]\n")
+#     while (turn<20):
+#         print("\nMulai Turn ",turn)
+#         turn_player= int(input('[PLAYER MAIN], lubang ke berapa yang mau diambil? '))
+#         if (turn_player>6):
+#             print('\n######## WARNING! ########\nmasukan ulang lubang yang akan diambil\n')
+#         else:
+#             move_ai(turn_player)
+#             show(board['AI'],board['player'],store['AI'],store['player'])
+#             #! cek main lagi atau tidak            
+#             if(lanjut==1):
+#                 turn_player= int(input('[PLAYER MAIN LAGI], lubang ke berapa yang mau diambil? '))
+#                 move_ai(turn_player)
+#                 show(board['AI'],board['player'],store['AI'],store['player'])
+#                 turn+=1
+# #! giliran lawan satunya
+#             ga.self_scan()
+#             for iterasi in range(0,10):
+#                 #print("###################### GENERASI KE ",iterasi," #######################")
+#                 ga.selection(pop, verbose=True)
+#                 ga.rata_fitness
+#                 turnamen = ga.turnamen(pop)
+#                 c = ga.crossover(turnamen[0], turnamen[1])
+#                 new_individu,fv_new=ga.mutation(c,2)
+#                 daftar=ga.rata_fitness
+#                 pop,f=ga.elitism(daftar,new_individu,fv_new)
+                
+#             best_individu=ga.moving(daftar)
+#             p=pop[best_individu]
+#             sc=ga.self_scan()
+#             list_scan=[]
+#             for i in sc.items():
+#                 list_scan.append(i[1])
+#             np.array(list_scan)
+#             skalar=np.array(list_scan)*p
+#             hsl=[]
+#             for c in range(len(skalar)):
+#                 h=np.sum(skalar[c][0:4])-skalar[c][-1]
+#                 hsl.append(h)
+#             best_choice = ga.move_lubang(hsl)            
+# #            turn_ai= int(input('[AI MAIN], lubang ke berapa yang mau diambil? '))
+#             move_p(best_choice)
+
+#             show(board['AI'],board['player'],store['AI'],store['player'])
+#             turn+=1
+#             #! cek main lagi atau tidak
+#             if(lanjut_ai==1):
+#                 ga.self_scan()
+#                 for iterasi in range(0,10):
+#                     #print("###################### GENERASI KE ",iterasi," #######################")
+#                     ga.selection(pop, verbose=True)
+#                     ga.rata_fitness
+#                     turnamen = ga.turnamen(pop)
+#                     c = ga.crossover(turnamen[0], turnamen[1])
+#                     new_individu,fv_new=ga.mutation(c,2)
+#                     daftar=ga.rata_fitness
+#                     pop,f=ga.elitism(daftar,new_individu,fv_new)
+                    
+#                 best_individu=ga.moving(daftar)
+#                 p=pop[best_individu]
+#                 sc=ga.self_scan()
+#                 list_scan=[]
+#                 for i in sc.items():
+#                     list_scan.append(i[1])
+#                 np.array(list_scan)
+#                 skalar=np.array(list_scan)*p
+#                 hsl=[]
+#                 for c in range(len(skalar)):
+#                     h=np.sum(skalar[c][0:4])-skalar[c][-1]
+#                     hsl.append(h)
+#                 best_choice = ga.move_lubang(hsl)            
+#     #            turn_ai= int(input('[AI MAIN], lubang ke berapa yang mau diambil? '))
+#                 move_p(best_choice)
+#                 show(board['AI'],board['player'],store['AI'],store['player'])                
+#                 turn+=1
+# #! jika yang main AI duluan
+# else:
+#     print("generate random first => [AI MAIN DULUAN]\n")
+#     while (turn<20):
+#         print("\nMulai Turn ",turn)
+        
+#         ga.self_scan()
+#         for iterasi in range(0,10):
+#             #print("###################### GENERASI KE ",iterasi," #######################")
+#             ga.selection(pop, verbose=True)
+#             ga.rata_fitness
+#             turnamen = ga.turnamen(pop)
+#             c = ga.crossover(turnamen[0], turnamen[1])
+#             new_individu,fv_new=ga.mutation(c,2)
+#             daftar=ga.rata_fitness
+#             pop,f=ga.elitism(daftar,new_individu,fv_new)
+            
+#         best_individu=ga.moving(daftar)
+#         p=pop[best_individu]
+#         sc=ga.self_scan()
+#         list_scan=[]
+#         for i in sc.items():
+#             list_scan.append(i[1])
+#         np.array(list_scan)
+#         skalar=np.array(list_scan)*p
+#         hsl=[]
+#         for c in range(len(skalar)):
+#             h=np.sum(skalar[c][0:4])-skalar[c][-1]
+#             hsl.append(h)
+#         best_choice = ga.move_lubang(hsl)            
+# #            turn_ai= int(input('[AI MAIN], lubang ke berapa yang mau diambil? '))
+#         move_p(best_choice)
+#         show(board['AI'],board['player'],store['AI'],store['player'])                
+#         turn+=1
+#         #move_p(best_choice)
+#         #show(board['AI'],board['player'],store['AI'],store['player'])
+#         #! cek main lagi atau tidak
+#         if(lanjut_ai==1):
+#             ga.self_scan()
+#             for iterasi in range(0,10):
+#                 #print("###################### GENERASI KE ",iterasi," #######################")
+#                 ga.selection(pop, verbose=True)
+#                 ga.rata_fitness
+#                 turnamen = ga.turnamen(pop)
+#                 c = ga.crossover(turnamen[0], turnamen[1])
+#                 new_individu,fv_new=ga.mutation(c,2)
+#                 daftar=ga.rata_fitness
+#                 pop,f=ga.elitism(daftar,new_individu,fv_new)
+                
+#             best_individu=ga.moving(daftar)
+#             p=pop[best_individu]
+#             sc=ga.self_scan()
+#             list_scan=[]
+#             for i in sc.items():
+#                 list_scan.append(i[1])
+#             np.array(list_scan)
+#             skalar=np.array(list_scan)*p
+#             hsl=[]
+#             for c in range(len(skalar)):
+#                 h=np.sum(skalar[c][0:4])-skalar[c][-1]
+#                 hsl.append(h)
+#             best_choice = ga.move_lubang(hsl)            
+# #            turn_ai= int(input('[AI MAIN], lubang ke berapa yang mau diambil? '))
+#             move_p(best_choice)
+#             show(board['AI'],board['player'],store['AI'],store['player'])                
+#             turn+=1
+# #! giliran lawan satunya
+#         turn_player= int(input('[player MAIN], lubang ke berapa yang mau diambil? '))
+#         move_ai(turn_player)
+#         show(board['AI'],board['player'],store['AI'],store['player'])
+#         turn+=1
+#         #! cek main lagi atau tidak
+#         if(lanjut==1):
+#             turn_player= int(input('[PLAYER MAIN LAGI], lubang ke berapa yang mau diambil? '))
+#             move_ai(turn_player)
+#             show(board['AI'],board['player'],store['AI'],store['player'])
+#             turn+=1
+            
+# ##! hitung skor setelah turn selesai  
+# print("Turn sudah selesai hasil perhitungan skor menentukan")
+# hitung_skor(store['player'],store['AI'])
+########################## !switch player and AI
+print("first = ",first,'\n')
 if(first==0):
-    print("generate random first => [PLAYER MAIN DULUAN]\n")
-    while (turn<20):
+    print("generate random first => [PLAYER RANDOM MAIN DULUAN]\n")
+    while (turn<=20):
+        turn_player=random.randint(0,6)
         print("\nMulai Turn ",turn)
-        turn_player= int(input('[PLAYER MAIN], lubang ke berapa yang mau diambil? '))
-        if (turn_player>6):
-            print('\n######## WARNING! ########\nmasukan ulang lubang yang akan diambil\n')
+#        turn_player= int(input('[PLAYER MAIN], lubang ke berapa yang mau diambil? '))
+        while(board['AI'][turn_player]==0):
+            turn_player=random.randint(0,6)
         else:
-            move_player(turn_player)
+            move_p(turn_player)
             show(board['AI'],board['player'],store['AI'],store['player'])
             #! cek main lagi atau tidak            
-            if(lanjut==1):
-                turn_player= int(input('[PLAYER MAIN LAGI], lubang ke berapa yang mau diambil? '))
-                move_player(turn_player)
+            while(lanjut_ai==1):
+                turn_player=random.randint(0,6)
+                while(board['AI'][turn_player]==0):
+                    turn_player=random.randint(0,6)
+                move_p(turn_player)
                 show(board['AI'],board['player'],store['AI'],store['player'])
-                turn+=1
+                #turn+=1
 #! giliran lawan satunya
             ga.self_scan()
-            for iterasi in range(0,10):
+            for iterasi in range(0,20):
                 #print("###################### GENERASI KE ",iterasi," #######################")
                 ga.selection(pop, verbose=True)
                 ga.rata_fitness
@@ -577,9 +751,9 @@ if(first==0):
             show(board['AI'],board['player'],store['AI'],store['player'])
             turn+=1
             #! cek main lagi atau tidak
-            if(lanjut_ai==1):
+            while(lanjut==1):
                 ga.self_scan()
-                for iterasi in range(0,10):
+                for iterasi in range(0,20):
                     #print("###################### GENERASI KE ",iterasi," #######################")
                     ga.selection(pop, verbose=True)
                     ga.rata_fitness
@@ -605,15 +779,15 @@ if(first==0):
     #            turn_ai= int(input('[AI MAIN], lubang ke berapa yang mau diambil? '))
                 move_ai(best_choice)
                 show(board['AI'],board['player'],store['AI'],store['player'])                
-                turn+=1
+                #turn+=1
 #! jika yang main AI duluan
 else:
     print("generate random first => [AI MAIN DULUAN]\n")
-    while (turn<20):
+    while (turn<=20):
         print("\nMulai Turn ",turn)
         
         ga.self_scan()
-        for iterasi in range(0,10):
+        for iterasi in range(0,20):
             #print("###################### GENERASI KE ",iterasi," #######################")
             ga.selection(pop, verbose=True)
             ga.rata_fitness
@@ -635,17 +809,18 @@ else:
         for c in range(len(skalar)):
             h=np.sum(skalar[c][0:4])-skalar[c][-1]
             hsl.append(h)
+        print("daftar FV tiap lubang, ",hsl)
         best_choice = ga.move_lubang(hsl)            
 #            turn_ai= int(input('[AI MAIN], lubang ke berapa yang mau diambil? '))
         move_ai(best_choice)
         show(board['AI'],board['player'],store['AI'],store['player'])                
         turn+=1
-        move_ai(best_choice)
-        show(board['AI'],board['player'],store['AI'],store['player'])
+        print("lanjut = ",lanjut)
         #! cek main lagi atau tidak
-        if(lanjut_ai==1):
+        while(lanjut==1):
+            print("[AI] MAIN LAGI")
             ga.self_scan()
-            for iterasi in range(0,10):
+            for iterasi in range(0,20):
                 #print("###################### GENERASI KE ",iterasi," #######################")
                 ga.selection(pop, verbose=True)
                 ga.rata_fitness
@@ -656,6 +831,7 @@ else:
                 pop,f=ga.elitism(daftar,new_individu,fv_new)
                 
             best_individu=ga.moving(daftar)
+            
             p=pop[best_individu]
             sc=ga.self_scan()
             list_scan=[]
@@ -667,23 +843,30 @@ else:
             for c in range(len(skalar)):
                 h=np.sum(skalar[c][0:4])-skalar[c][-1]
                 hsl.append(h)
+            print("daftar FV tiap lubang, ",hsl)
             best_choice = ga.move_lubang(hsl)            
 #            turn_ai= int(input('[AI MAIN], lubang ke berapa yang mau diambil? '))
             move_ai(best_choice)
             show(board['AI'],board['player'],store['AI'],store['player'])                
-            turn+=1
+            #turn+=1
 #! giliran lawan satunya
-        turn_player= int(input('[player MAIN], lubang ke berapa yang mau diambil? '))
-        move_player(turn_player)
+        turn_player=random.randint(0,6)
+        while(board['player'][turn_player]==0):
+            turn_player=random.randint(0,6)
+        #turn_player= int(input('[player MAIN], lubang ke berapa yang mau diambil? '))
+        move_p(turn_player)
         show(board['AI'],board['player'],store['AI'],store['player'])
         turn+=1
         #! cek main lagi atau tidak
-        if(lanjut==1):
-            turn_player= int(input('[PLAYER MAIN LAGI], lubang ke berapa yang mau diambil? '))
-            move_player(turn_player)
+        while(lanjut_ai==1):
+            turn_player=random.randint(0,6)
+            while(board['player'][turn_player]==0):
+                turn_player=random.randint(0,6)
+#            turn_player= int(input('[PLAYER MAIN LAGI], lubang ke berapa yang mau diambil? '))
+            move_p(turn_player)
             show(board['AI'],board['player'],store['AI'],store['player'])
-            turn+=1
+            #turn+=1
             
 ##! hitung skor setelah turn selesai  
 print("Turn sudah selesai hasil perhitungan skor menentukan")
-hitung_skor(store['player'],store['AI'])
+hitung_skor(store['AI'],store['player'])
